@@ -16,16 +16,16 @@ A comprehensive .NET 9 OCPP (Open Charge Point Protocol) 1.6 simulator for elect
 ## Project Structure
 
 ```
-??? ecogy.app.chargepoint.simulator/     # Core simulator (Automated Mode)
-?   ??? ChargingPointSimulator.cs        # Main simulator implementation
-?   ??? ChargingPointConfiguration.cs    # Configuration classes
-?   ??? Program.cs                       # Automated mode entry point
-?
-??? ecogy.app.chargepoint.interactive/   # Interactive Mode
-?   ??? Program.cs                       # Interactive mode entry point
-?   ??? InteractiveSimulator.cs          # Console interface
-?
-??? README.md                            # This file
+├── ecogy.app.chargepoint.simulator/     # Core simulator (Automated Mode)
+│   ├── ChargingPointSimulator.cs        # Main simulator implementation
+│   ├── ChargingPointConfiguration.cs    # Configuration classes
+│   └── Program.cs                       # Automated mode entry point
+│
+├── ecogy.app.chargepoint.interactive/   # Interactive Mode
+│   ├── Program.cs                       # Interactive mode entry point
+│   └── InteractiveSimulator.cs          # Console interface
+│
+└── README.md                            # This file
 ```
 
 ## Prerequisites
@@ -76,7 +76,7 @@ dotnet run -- "ws://localhost:5000/ocpp" "DEV_CP001" "dev123"
 
 Available interactive commands:
 - `1` - Authorize RFID card
-- `2` - Simulate complete transaction (Authorize ? Start ? MeterValues ? Stop)
+- `2` - Simulate complete transaction (Authorize → Start → MeterValues → Stop)
 - `3` - Change connector status
 - `4` - Show current configuration
 - `h` - Show help
@@ -143,7 +143,7 @@ var config = new ChargingPointConfiguration
 3. **MeterValues** - Send periodic energy consumption data
 4. **StopTransaction** - End charging session
 
-### Remote Commands (Server ? Charging Point)
+### Remote Commands (Server → Charging Point)
 - **RemoteStartTransaction** - Server initiates charging
 - **RemoteStopTransaction** - Server stops charging
 - **GetConfiguration** - Retrieve charging point settings
