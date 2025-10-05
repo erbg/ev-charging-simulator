@@ -2,7 +2,7 @@
 
 A comprehensive .NET 9 OCPP (Open Charge Point Protocol) 1.6 simulator for electric vehicle charging stations. This project provides both automated and interactive simulation modes for testing and developing OCPP-compliant charging infrastructure without requiring physical hardware.
 
-## ?? Features
+## Features
 
 - **Full OCPP 1.6 Protocol Support** - Complete implementation including BootNotification, Authorize, StartTransaction, StopTransaction, MeterValues, and RemoteStart/Stop operations
 - **Dual Operating Modes**:
@@ -13,7 +13,7 @@ A comprehensive .NET 9 OCPP (Open Charge Point Protocol) 1.6 simulator for elect
 - **Realistic Simulation** - Simulates actual charging station behavior including meter values, status notifications, and transaction lifecycle
 - **Multiple Charging Point Support** - Run multiple simulators simultaneously for load testing
 
-## ??? Project Structure
+## Project Structure
 
 ```
 ??? ecogy.app.chargepoint.simulator/     # Core simulator (Automated Mode)
@@ -28,12 +28,12 @@ A comprehensive .NET 9 OCPP (Open Charge Point Protocol) 1.6 simulator for elect
 ??? README.md                            # This file
 ```
 
-## ?? Prerequisites
+## Prerequisites
 
 - [.NET 9.0 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
 - An OCPP 1.6 compliant central system/server to connect to
 
-## ?? Quick Start
+## Quick Start
 
 ### Option 1: Automated Mode (Background Service)
 
@@ -63,7 +63,7 @@ Example:
   dotnet run -- "ws://localhost:5000/ocpp/websocket/CentralSystemService" "CP001" "abc123"
 ```
 
-## ?? Usage Examples
+## Usage Examples
 
 ### 1. Development & Testing
 
@@ -113,7 +113,7 @@ curl -X POST "https://localhost:5001/api/charging/remote-start" \
   -d '{"chargePointId": "CP001", "idTag": "abc123", "connectorId": 1}'
 ```
 
-## ?? Configuration
+## Configuration
 
 The simulator can be configured through the `ChargingPointConfiguration` class:
 
@@ -129,7 +129,7 @@ var config = new ChargingPointConfiguration
 };
 ```
 
-## ?? OCPP Protocol Flow
+## OCPP Protocol Flow
 
 ### Connection & Registration
 1. WebSocket connection to OCPP server
@@ -150,7 +150,7 @@ var config = new ChargingPointConfiguration
 - **ChangeConfiguration** - Update charging point settings
 - **Reset** - Restart charging point
 
-## ????? Use Cases
+## Use Cases
 
 1. **API Development** - Test your OCPP central system implementation
 2. **Integration Testing** - Automated test scenarios for CI/CD pipelines
@@ -158,7 +158,7 @@ var config = new ChargingPointConfiguration
 4. **Protocol Debugging** - Interactive message-by-message OCPP communication analysis
 5. **Training** - Learn OCPP protocol behavior and message flows
 
-## ?? Debugging
+## Debugging
 
 ### Enable Detailed Logging
 
@@ -184,7 +184,7 @@ All WebSocket messages are logged with timestamps:
    - Ensure StartTransaction completes before sending MeterValues
    - Verify transaction ID matching between Start/Stop
 
-## ?? Contributing
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch
@@ -192,19 +192,19 @@ All WebSocket messages are logged with timestamps:
 4. Add tests if applicable
 5. Submit a pull request
 
-## ?? License
+## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## ?? Related Projects
+## Related Projects
 
 - [OCPP 1.6 Specification](https://www.openchargealliance.org/protocols/ocpp-16/)
 - [OCPP 2.0.1 Specification](https://www.openchargealliance.org/protocols/ocpp-201/)
 
-## ?? Support
+## Support
 
 For questions or issues, please open an issue on GitHub or contact the development team.
 
 ---
 
-**Built with ?? for the EV charging ecosystem**
+**Built with love for the EV charging ecosystem**
