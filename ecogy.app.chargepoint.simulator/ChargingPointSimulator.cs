@@ -19,6 +19,12 @@ public class ChargingPointSimulator : BackgroundService
     private CancellationTokenSource? _cancellationTokenSource;
     private readonly Random _random = new();
     private readonly Dictionary<string, TaskCompletionSource<JsonElement>> _pendingRequests = new();
+    
+    // Reconnection configuration
+    private const int MaxReconnectAttempts = 10;
+    private const int InitialReconnectDelayMs = 1000;
+    private const int MaxReconnectDelayMs = 30000;
+    private int _reconnectAttempts = 0;
 
     public ChargingPointSimulator(ILogger<ChargingPointSimulator> logger, ChargingPointConfiguration config)
     {
@@ -35,12 +41,49 @@ public class ChargingPointSimulator : BackgroundService
             try
             {
                 await ConnectAndSimulate(stoppingToken);
+                
+                // Reset reconnect attempts after successful connection
+                _reconnectAttempts = 0;
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogInformation("Charging point simulator cancelled");
+                break;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error in charging point simulation");
-                await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+                
+                // Implement exponential backoff for reconnection
+                await HandleReconnection(stoppingToken);
             }
+        }
+    }
+
+    private async Task HandleReconnection(CancellationToken cancellationToken)
+    {
+        if (_reconnectAttempts >= MaxReconnectAttempts)
+        {
+            _logger.LogError("Maximum reconnection attempts ({MaxAttempts}) reached. Stopping simulator.", MaxReconnectAttempts);
+            return;
+        }
+
+        _reconnectAttempts++;
+        
+        // Calculate exponential backoff delay
+        var delay = Math.Min(InitialReconnectDelayMs * Math.Pow(2, _reconnectAttempts - 1), MaxReconnectDelayMs);
+        
+        _logger.LogWarning("Connection lost. Attempting to reconnect in {Delay}ms (attempt {Attempt}/{MaxAttempts})", 
+            delay, _reconnectAttempts, MaxReconnectAttempts);
+
+        try
+        {
+            await Task.Delay(TimeSpan.FromMilliseconds(delay), cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            _logger.LogInformation("Reconnection cancelled");
+            throw;
         }
     }
 
@@ -80,14 +123,25 @@ public class ChargingPointSimulator : BackgroundService
 
     private async Task ConnectWebSocket(CancellationToken cancellationToken)
     {
+        // Clean up existing connection if any
+        await DisconnectWebSocket();
+        
         _webSocket = new ClientWebSocket();
         _webSocket.Options.AddSubProtocol("ocpp1.6");
         
         var uri = new Uri($"{_config.ServerUrl}/{_config.ChargePointId}");
-        _logger.LogInformation("Connecting to {Uri}", uri);
+        _logger.LogInformation("Connecting to {Uri} (attempt {Attempt})", uri, _reconnectAttempts + 1);
         
-        await _webSocket.ConnectAsync(uri, cancellationToken);
-        _logger.LogInformation("Connected to OCPP server");
+        try
+        {
+            await _webSocket.ConnectAsync(uri, cancellationToken);
+            _logger.LogInformation("Successfully connected to OCPP server");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to connect to OCPP server");
+            throw;
+        }
     }
 
     private async Task DisconnectWebSocket()
@@ -97,15 +151,23 @@ public class ChargingPointSimulator : BackgroundService
             try
             {
                 await _webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Simulation ended", CancellationToken.None);
+                _logger.LogInformation("WebSocket connection closed gracefully");
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Error closing WebSocket connection");
+                _logger.LogWarning(ex, "Error closing WebSocket connection gracefully");
             }
         }
         
         _webSocket?.Dispose();
         _webSocket = null;
+        
+        // Clear pending requests on disconnection
+        foreach (var pendingRequest in _pendingRequests.Values)
+        {
+            pendingRequest.TrySetCanceled();
+        }
+        _pendingRequests.Clear();
     }
 
     private async Task ListenForMessages(CancellationToken cancellationToken)
@@ -139,19 +201,33 @@ public class ChargingPointSimulator : BackgroundService
                 }
                 else if (result.MessageType == WebSocketMessageType.Close)
                 {
-                    _logger.LogInformation("WebSocket connection closed by server");
+                    _logger.LogWarning("WebSocket connection closed by server. Status: {CloseStatus}, Description: {CloseDescription}", 
+                        result.CloseStatus, result.CloseStatusDescription);
                     break;
                 }
             }
             catch (OperationCanceledException)
             {
+                _logger.LogInformation("Message listening cancelled");
                 break;
+            }
+            catch (WebSocketException ex)
+            {
+                _logger.LogError(ex, "WebSocket error occurred during message reception");
+                throw; // This will trigger reconnection logic
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error receiving WebSocket message");
-                break;
+                _logger.LogError(ex, "Unexpected error receiving WebSocket message");
+                throw; // This will trigger reconnection logic
             }
+        }
+        
+        // Check if connection was lost unexpectedly
+        if (_webSocket?.State != WebSocketState.Open && !cancellationToken.IsCancellationRequested)
+        {
+            _logger.LogWarning("WebSocket connection lost unexpectedly. State: {State}", _webSocket?.State);
+            throw new InvalidOperationException("WebSocket connection lost");
         }
     }
 
@@ -765,15 +841,35 @@ public class ChargingPointSimulator : BackgroundService
     {
         if (_webSocket?.State == WebSocketState.Open)
         {
-            var bytes = Encoding.UTF8.GetBytes(message);
-            var timestamp = DateTime.UtcNow.ToString("HH:mm:ss.fff");
-            
-            await _webSocket.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true, CancellationToken.None);
-            _logger.LogInformation("[{Timestamp}] Sent WebSocket message: {Message}", timestamp, message);
+            try
+            {
+                var bytes = Encoding.UTF8.GetBytes(message);
+                var timestamp = DateTime.UtcNow.ToString("HH:mm:ss.fff");
+                
+                await _webSocket.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true, CancellationToken.None);
+                _logger.LogInformation("[{Timestamp}] Sent WebSocket message: {Message}", timestamp, message);
+            }
+            catch (WebSocketException ex)
+            {
+                _logger.LogError(ex, "WebSocket error occurred while sending message");
+                throw; // This will trigger reconnection logic
+            }
+            catch (ObjectDisposedException ex)
+            {
+                _logger.LogWarning(ex, "Attempted to send message on disposed WebSocket");
+                throw new InvalidOperationException("WebSocket connection lost", ex);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error sending WebSocket message");
+                throw;
+            }
         }
         else
         {
-            _logger.LogWarning("Cannot send message - WebSocket not connected");
+            var currentState = _webSocket?.State.ToString() ?? "null";
+            _logger.LogWarning("Cannot send message - WebSocket not connected. Current state: {State}", currentState);
+            throw new InvalidOperationException($"WebSocket not connected. Current state: {currentState}");
         }
     }
 
