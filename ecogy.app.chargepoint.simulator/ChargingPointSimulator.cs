@@ -679,7 +679,7 @@ public class ChargingPointSimulator : BackgroundService
         if (!_config.CurrentTransactionId.HasValue) return;
 
         // Simulate energy consumption
-        var energyConsumed = _random.Next(50, 500);
+        var energyConsumed = _random.Next(500, 5000);
         _config.CurrentMeterValue += energyConsumed;
 
         var payload = new
