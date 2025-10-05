@@ -194,7 +194,7 @@ All WebSocket messages are logged with timestamps:
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the GPLv3 License - see the LICENSE file for details.
 
 ## Related Projects
 
