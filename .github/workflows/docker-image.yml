@@ -4,8 +4,6 @@ on:
   push:
     tags:
       - 'v*'   # triggers on tags like v0.1.0, v1.2.3    
-    branches: 
-      - "master"
 
 jobs:
 
