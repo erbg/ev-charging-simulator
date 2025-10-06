@@ -7,20 +7,21 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ecogy.app.chargepoint.simul
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ecogy.app.chargepoint.interactive", "ecogy.app.chargepoint.interactive\ecogy.app.chargepoint.interactive.csproj", "{E4A2E80C-4A41-38F3-C850-F4CD8F3944AA}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Projektmappenelemente", "Projektmappenelemente", "{84D27F74-D2BA-6C25-2661-968F101900D9}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
+		LICENSE = LICENSE
+		README.md = README.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{6473C4CE-F144-4975-B3B0-FF4A49280DBC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6473C4CE-F144-4975-B3B0-FF4A49280DBC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6473C4CE-F144-4975-B3B0-FF4A49280DBC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6473C4CE-F144-4975-B3B0-FF4A49280DBC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C302BD90-DCD5-409F-B78C-54B6F6BEE6F1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C302BD90-DCD5-409F-B78C-54B6F6BEE6F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C302BD90-DCD5-409F-B78C-54B6F6BEE6F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C302BD90-DCD5-409F-B78C-54B6F6BEE6F1}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C75B6004-BEC6-C32F-DAAD-70F6FA99B262}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C75B6004-BEC6-C32F-DAAD-70F6FA99B262}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C75B6004-BEC6-C32F-DAAD-70F6FA99B262}.Release|Any CPU.ActiveCfg = Release|Any CPU

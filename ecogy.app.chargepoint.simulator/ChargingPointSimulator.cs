@@ -638,8 +638,59 @@ public class ChargingPointSimulator : BackgroundService
         var statusTask = SendPeriodicStatusNotifications(cancellationToken);
         var meterValuesTask = SendPeriodicMeterValues(cancellationToken);
 
-        // Wait for cancellation or any task to complete with error
-        await Task.WhenAny(heartbeatTask, statusTask, meterValuesTask);
+        try
+        {
+            // Wait for cancellation or any task to complete
+            await Task.WhenAny(heartbeatTask, statusTask, meterValuesTask);
+            
+            _logger.LogDebug("One or more periodic tasks completed, checking for errors");
+            
+            // Check if any task completed with an error (not cancellation)
+            if (heartbeatTask.IsCompletedSuccessfully == false && !cancellationToken.IsCancellationRequested)
+            {
+                _logger.LogDebug("Heartbeat task completed unexpectedly");
+            }
+            
+            if (statusTask.IsCompletedSuccessfully == false && !cancellationToken.IsCancellationRequested)
+            {
+                _logger.LogDebug("Status notification task completed unexpectedly");
+            }
+            
+            if (meterValuesTask.IsCompletedSuccessfully == false && !cancellationToken.IsCancellationRequested)
+            {
+                _logger.LogDebug("Meter values task completed unexpectedly");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error in charging station behavior simulation");
+            throw;
+        }
+        finally
+        {
+            // Cancel the cancellation token to stop all periodic tasks
+            _cancellationTokenSource?.Cancel();
+            
+            // Wait a bit for tasks to complete gracefully
+            try
+            {
+                await Task.WhenAll(heartbeatTask, statusTask, meterValuesTask).WaitAsync(TimeSpan.FromSeconds(5));
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when tasks are cancelled
+            }
+            catch (TimeoutException)
+            {
+                _logger.LogWarning("Some periodic tasks did not complete within timeout");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Error waiting for periodic tasks to complete");
+            }
+            
+            _logger.LogDebug("Charging station behavior simulation completed");
+        }
     }
 
     private async Task SendPeriodicHeartbeats(CancellationToken cancellationToken)
@@ -649,17 +700,36 @@ public class ChargingPointSimulator : BackgroundService
             try
             {
                 await Task.Delay(TimeSpan.FromSeconds(_config.HeartbeatInterval), cancellationToken);
-                await SendHeartbeat();
+                
+                // Check if WebSocket is still connected before sending
+                if (IsWebSocketConnected())
+                {
+                    await SendHeartbeat();
+                }
+                else
+                {
+                    _logger.LogDebug("Skipping heartbeat - WebSocket not connected");
+                    break; // Exit loop to allow reconnection
+                }
             }
             catch (OperationCanceledException)
             {
+                _logger.LogDebug("Heartbeat task cancelled");
                 break;
+            }
+            catch (InvalidOperationException ex) when (ex.Message.Contains("WebSocket not connected"))
+            {
+                _logger.LogDebug("Heartbeat failed - connection lost, exiting task");
+                break; // Exit loop to allow reconnection
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error sending heartbeat");
+                break; // Exit loop to allow reconnection on unexpected errors
             }
         }
+        
+        _logger.LogDebug("Heartbeat task completed");
     }
 
     private async Task SendPeriodicStatusNotifications(CancellationToken cancellationToken)
@@ -669,17 +739,36 @@ public class ChargingPointSimulator : BackgroundService
             try
             {
                 await Task.Delay(TimeSpan.FromSeconds(60), cancellationToken);
-                await SendStatusNotification();
+                
+                // Check if WebSocket is still connected before sending
+                if (IsWebSocketConnected())
+                {
+                    await SendStatusNotification();
+                }
+                else
+                {
+                    _logger.LogDebug("Skipping status notification - WebSocket not connected");
+                    break; // Exit loop to allow reconnection
+                }
             }
             catch (OperationCanceledException)
             {
+                _logger.LogDebug("Status notification task cancelled");
                 break;
+            }
+            catch (InvalidOperationException ex) when (ex.Message.Contains("WebSocket not connected"))
+            {
+                _logger.LogDebug("Status notification failed - connection lost, exiting task");
+                break; // Exit loop to allow reconnection
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error sending status notification");
+                break; // Exit loop to allow reconnection on unexpected errors
             }
         }
+        
+        _logger.LogDebug("Status notification task completed");
     }
 
     private async Task SendPeriodicMeterValues(CancellationToken cancellationToken)
@@ -689,22 +778,44 @@ public class ChargingPointSimulator : BackgroundService
             try
             {
                 await Task.Delay(TimeSpan.FromSeconds(30), cancellationToken);
-                if (_config.CurrentTransactionId.HasValue)
+                
+                // Check if WebSocket is still connected and we have an active transaction
+                if (IsWebSocketConnected() && _config.CurrentTransactionId.HasValue)
                 {
                     await SendMeterValues();
                 }
+                else if (!IsWebSocketConnected())
+                {
+                    _logger.LogDebug("Skipping meter values - WebSocket not connected");
+                    break; // Exit loop to allow reconnection
+                }
+                // If no transaction, continue the loop
             }
             catch (OperationCanceledException)
             {
+                _logger.LogDebug("Meter values task cancelled");
                 break;
+            }
+            catch (InvalidOperationException ex) when (ex.Message.Contains("WebSocket not connected"))
+            {
+                _logger.LogDebug("Meter values failed - connection lost, exiting task");
+                break; // Exit loop to allow reconnection
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error sending meter values");
+                break; // Exit loop to allow reconnection on unexpected errors
             }
         }
+        
+        _logger.LogDebug("Meter values task completed");
     }
 
+    private bool IsWebSocketConnected()
+    {
+        return _webSocket?.State == WebSocketState.Open;
+    }
+    
     #region OCPP Message Sending Methods
 
     private async Task SendBootNotification()

@@ -9,6 +9,7 @@ A comprehensive .NET 9 OCPP (Open Charge Point Protocol) 1.6 simulator for elect
   - **Automated Mode** - Background service for continuous testing and CI/CD integration
   - **Interactive Mode** - Console-based manual control for debugging and step-by-step testing
 - **WebSocket Communication** - Real-time OCPP message exchange with charging management systems
+- **Automatic Reconnection** - Robust connection handling with exponential backoff retry logic
 - **Configurable Parameters** - Customizable charging point details, heartbeat intervals, and RFID cards
 - **Realistic Simulation** - Simulates actual charging station behavior including meter values, status notifications, and transaction lifecycle
 - **Multiple Charging Point Support** - Run multiple simulators simultaneously for load testing
@@ -57,7 +58,7 @@ Usage: dotnet run -- <serverUrl> <chargePointId> <testRfidCard>
 Parameters:
   serverUrl      - WebSocket URL of your OCPP server
   chargePointId  - Unique identifier for this charging point
-  testRfidCard   - RFID card ID for testing transactions
+  testRfidCard   - default RFID card ID for testing transactions
 
 Example:
   dotnet run -- "ws://localhost:5000/ocpp/websocket/CentralSystemService" "CP001" "abc123"
