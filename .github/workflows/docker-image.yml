@@ -32,4 +32,6 @@ jobs:
       with:
         context: .
         push: true
-        tags: ghcr.io/${{ github.repository_owner }}/my-image:${{ github.ref_name }}
+        tags: |
+          ghcr.io/${{ github.repository_owner }}/ev-charging-simulator:${{ github.ref_name }}
+          ghcr.io/${{ github.repository_owner }}/ev-charging-simulator:latest
