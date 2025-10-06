@@ -1,0 +1,100 @@
+version: '3.8'
+
+services:
+  # Single charging point simulator (automated mode)
+  ocpp-simulator:
+    build: .
+    container_name: ocpp-simulator-cp001
+    environment:
+      - SIMULATOR_MODE=automated
+      - CONFIG_SOURCE=env
+      - OCPP_SERVER_URL=ws://host.docker.internal:5000/ocpp
+      - OCPP_CHARGE_POINT_ID=CP001
+      - OCPP_TEST_RFID_CARD=abc123
+      - OCPP_HEARTBEAT_INTERVAL=30
+    restart: unless-stopped
+    networks:
+      - ocpp-network
+
+  # Interactive simulator (for testing)
+  ocpp-interactive:
+    build: .
+    container_name: ocpp-interactive
+    environment:
+      - SIMULATOR_MODE=interactive
+      - CONFIG_SOURCE=env
+      - OCPP_SERVER_URL=ws://host.docker.internal:5000/ocpp
+      - OCPP_CHARGE_POINT_ID=CP002
+      - OCPP_TEST_RFID_CARD=def456
+    stdin_open: true
+    tty: true
+    networks:
+      - ocpp-network
+    profiles:
+      - interactive
+
+  # Multiple charging points using numbered environment variables
+  ocpp-multiple:
+    build: .
+    container_name: ocpp-multiple
+    environment:
+      - SIMULATOR_MODE=automated
+      - CONFIG_SOURCE=env
+      - MULTIPLE_CONFIGS=true
+      # Configuration 1
+      - OCPP_1_SERVER_URL=ws://host.docker.internal:5000/ocpp
+      - OCPP_1_CHARGE_POINT_ID=CP101
+      - OCPP_1_TEST_RFID_CARD=card101
+      - OCPP_1_HEARTBEAT_INTERVAL=30
+      # Configuration 2
+      - OCPP_2_SERVER_URL=ws://host.docker.internal:5000/ocpp
+      - OCPP_2_CHARGE_POINT_ID=CP102
+      - OCPP_2_TEST_RFID_CARD=card102
+      - OCPP_2_HEARTBEAT_INTERVAL=45
+      # Configuration 3
+      - OCPP_3_SERVER_URL=ws://host.docker.internal:5000/ocpp
+      - OCPP_3_CHARGE_POINT_ID=CP103
+      - OCPP_3_TEST_RFID_CARD=card103
+      - OCPP_3_HEARTBEAT_INTERVAL=60
+    restart: unless-stopped
+    networks:
+      - ocpp-network
+    profiles:
+      - multiple
+
+  # JSON configuration example
+  ocpp-json-config:
+    build: .
+    container_name: ocpp-json-config
+    environment:
+      - SIMULATOR_MODE=automated
+      - CONFIG_SOURCE=json
+      - CONFIG_FILE=example-config.json
+    volumes:
+      - ./example-config.json:/app/config.json:ro
+    restart: unless-stopped
+    networks:
+      - ocpp-network
+    profiles:
+      - json
+
+  # Multiple configurations from JSON
+  ocpp-json-multiple:
+    build: .
+    container_name: ocpp-json-multiple
+    environment:
+      - SIMULATOR_MODE=automated
+      - CONFIG_SOURCE=json
+      - CONFIG_FILE=example-multiple-config.json
+      - MULTIPLE_CONFIGS=true
+    volumes:
+      - ./example-multiple-config.json:/app/config.json:ro
+    restart: unless-stopped
+    networks:
+      - ocpp-network
+    profiles:
+      - json-multiple
+
+networks:
+  ocpp-network:
+    driver: bridge

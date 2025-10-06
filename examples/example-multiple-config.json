@@ -1,0 +1,35 @@
+[
+  {
+    "serverUrl": "ws://localhost:5000/ocpp",
+    "chargePointId": "CP001",
+    "chargePointModel": "ECO-DC-50",
+    "chargePointVendor": "Ecogy",
+    "chargePointSerialNumber": "ECO001234567",
+    "firmwareVersion": "1.0.0",
+    "heartbeatInterval": 30,
+    "testRfidCard": "abc123",
+    "connectorCount": 2
+  },
+  {
+    "serverUrl": "ws://localhost:5000/ocpp",
+    "chargePointId": "CP002",
+    "chargePointModel": "ECO-DC-100",
+    "chargePointVendor": "Ecogy",
+    "chargePointSerialNumber": "ECO001234568",
+    "firmwareVersion": "1.0.0",
+    "heartbeatInterval": 60,
+    "testRfidCard": "def456",
+    "connectorCount": 1
+  },
+  {
+    "serverUrl": "ws://localhost:5000/ocpp",
+    "chargePointId": "CP003",
+    "chargePointModel": "ECO-AC-22",
+    "chargePointVendor": "Ecogy",
+    "chargePointSerialNumber": "ECO001234569",
+    "firmwareVersion": "1.1.0",
+    "heartbeatInterval": 45,
+    "testRfidCard": "ghi789",
+    "connectorCount": 1
+  }
+]

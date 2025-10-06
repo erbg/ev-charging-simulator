@@ -1,0 +1,12 @@
+{
+  "serverUrl": "ws://localhost:5000/ocpp",
+  "chargePointId": "CP001",
+  "chargePointModel": "ECO-DC-50",
+  "chargePointVendor": "Ecogy",
+  "chargePointSerialNumber": "ECO001234567",
+  "firmwareVersion": "1.0.0",
+  "heartbeatInterval": 30,
+  "testRfidCard": "abc123",
+  "connectorCount": 1,
+  "tenantId": null
+}

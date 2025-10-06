@@ -1,0 +1,62 @@
+# .NET build artifacts
+**/bin/
+**/obj/
+**/.vs/
+**/.vscode/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Docker
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# IDE files
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+
+# Runtime files
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+
+# Dependency directories
+node_modules/
+
+# Optional npm cache directory
+.npm
+
+# dotenv environment variables file
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Documentation (will be copied separately if needed)
+*.md
+docs/
+
+# Test files (not needed in production image)
+**/test/
+**/tests/
+**/*test*/
