@@ -23,7 +23,8 @@ if (args.Length > 0 && (args[0] == "--env" || args[0] == "-e"))
     // Load from environment variables
     Console.WriteLine("Loading configuration from environment variables...");
     
-    if (args.Length > 1 && (args[1] == "--multiple" || args[1] == "-m"))
+
+    if (ConfigurationLoader.HasMultipleConfigurationSupport() || (args.Length > 1 && (args[1] == "--multiple" || args[1] == "-m")))
     {
         // Load multiple configurations - for automated mode, we'll run them all simultaneously
         var prefix = args.Length > 2 ? args[2] : "OCPP_";

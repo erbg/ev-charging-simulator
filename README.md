@@ -85,6 +85,8 @@ dotnet run -- --config config.json
 **Environment Variables (Multiple):**
 ```bash
 # Set multiple configurations
+export MULTIPLESUPPORT="true"
+
 export OCPP_1_SERVER_URL="ws://localhost:5000/ocpp"
 export OCPP_1_CHARGE_POINT_ID="CP001"
 export OCPP_1_TEST_RFID_CARD="abc123"

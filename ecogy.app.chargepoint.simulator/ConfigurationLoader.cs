@@ -53,6 +53,13 @@ public static class ConfigurationLoader
         return config;
     }
 
+    public static bool HasMultipleConfigurationSupport()
+    {
+        return GetEnvironmentVariable($"MULTIPLESUPPORT") != null && 
+               (GetEnvironmentVariable($"MULTIPLESUPPORT") == "1" || 
+                GetEnvironmentVariable($"MULTIPLESUPPORT")?.ToLower() == "true");
+    }
+
     /// <summary>
     /// Load multiple configurations from environment variables
     /// Supports patterns like OCPP_1_SERVER_URL, OCPP_2_SERVER_URL, etc.
