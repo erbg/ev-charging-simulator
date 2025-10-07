@@ -110,10 +110,13 @@ else
     // Multiple configurations - register multiple simulators
     for (int i = 0; i < configurations.Count; i++)
     {
+        var config = configurations[i];
+        
         // Register each simulator as a hosted service with proper factory
         builder.Services.AddSingleton<IHostedService, ChargingPointSimulator>(provider =>
         {
-            return new ChargingPointSimulator(provider.GetRequiredService<ILogger<ChargingPointSimulator>>(), configurations[i]);
+            var logger = provider.GetRequiredService<ILogger<ChargingPointSimulator>>();
+            return new ChargingPointSimulator(logger, config);
         });
     }
 }
