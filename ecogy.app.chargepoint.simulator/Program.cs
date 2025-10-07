@@ -110,18 +110,10 @@ else
     // Multiple configurations - register multiple simulators
     for (int i = 0; i < configurations.Count; i++)
     {
-        var configIndex = i; // Capture the loop variable
-        var config = configurations[i];
-        
-        // Register the configuration with a keyed service
-        builder.Services.AddKeyedSingleton($"config_{configIndex}", config);
-        
         // Register each simulator as a hosted service with proper factory
-        builder.Services.AddHostedService(provider =>
+        builder.Services.AddSingleton<IHostedService, ChargingPointSimulator>(provider =>
         {
-            var logger = provider.GetRequiredService<ILogger<ChargingPointSimulator>>();
-            var configuration = provider.GetRequiredKeyedService<ChargingPointConfiguration>($"config_{configIndex}");
-            return new ChargingPointSimulator(logger, configuration);
+            return new ChargingPointSimulator(provider.GetRequiredService<ILogger<ChargingPointSimulator>>(), configurations[i]);
         });
     }
 }
