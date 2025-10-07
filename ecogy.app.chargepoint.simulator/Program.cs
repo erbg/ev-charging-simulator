@@ -18,7 +18,7 @@ if (args.Length > 0 && (args[0] == "--help" || args[0] == "-h"))
     Environment.Exit(0);
 }
 
-if (args.Length > 0 && (args[0] == "--env" || args[0] == "-e"))
+if (args.Length > 0 && (args[0] == "--env" || args[0] == "-e")) 
 {
     // Load from environment variables
     Console.WriteLine("Loading configuration from environment variables...");
@@ -110,16 +110,19 @@ else
     // Multiple configurations - register multiple simulators
     for (int i = 0; i < configurations.Count; i++)
     {
+        var configIndex = i; // Capture the loop variable
         var config = configurations[i];
-        builder.Services.AddKeyedSingleton($"config_{i}", config);
-        builder.Services.AddKeyedSingleton<ChargingPointSimulator>($"simulator_{i}", (provider, key) =>
+        
+        // Register the configuration with a keyed service
+        builder.Services.AddKeyedSingleton($"config_{configIndex}", config);
+        
+        // Register each simulator as a hosted service with proper factory
+        builder.Services.AddHostedService(provider =>
         {
             var logger = provider.GetRequiredService<ILogger<ChargingPointSimulator>>();
-            var configuration = provider.GetRequiredKeyedService<ChargingPointConfiguration>($"config_{i}");
+            var configuration = provider.GetRequiredKeyedService<ChargingPointConfiguration>($"config_{configIndex}");
             return new ChargingPointSimulator(logger, configuration);
         });
-        builder.Services.AddHostedService(provider => 
-            provider.GetRequiredKeyedService<ChargingPointSimulator>($"simulator_{i}"));
     }
 }
 
@@ -148,7 +151,6 @@ else
 }
 
 logger.LogInformation("========================================");
-
 logger.LogInformation("Starting charging point simulation...");
 logger.LogInformation("Commands you can test:");
 logger.LogInformation("  - The simulator will automatically send BootNotification, Heartbeats, and StatusNotifications");
