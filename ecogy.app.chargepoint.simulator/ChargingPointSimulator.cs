@@ -94,26 +94,27 @@ public class ChargingPointSimulator : BackgroundService
         try
         {
             await ConnectWebSocket(cancellationToken);
-            
-            // Start listening for incoming messages
-            var listenTask = ListenForMessages(_cancellationTokenSource.Token);
-            
             // Send initial BootNotification
             await SendBootNotification();
-            
             // Wait a moment for BootNotification response
             await Task.Delay(1000, cancellationToken);
-            
+
             // Send initial StatusNotification for connector 0 (charging station)
             await SendStatusNotificationForConnector(0, "Available");
-            
+
             // Send initial StatusNotification for connector 1 (charging connector)
             await SendStatusNotificationForConnector(1, "Available");
-            
-            // Simulate charging station behavior
-            await SimulateChargingStationBehavior(_cancellationTokenSource.Token);
-            
-            await listenTask;
+
+            while (true)
+            {
+                // Start listening for incoming messages
+                var listenTask = ListenForMessages(_cancellationTokenSource.Token);
+
+                // Simulate charging station behavior
+                await SimulateChargingStationBehavior(_cancellationTokenSource.Token);
+
+                await listenTask;
+            }
         }
         finally
         {
